@@ -21,5 +21,7 @@ setMethod("mdsPlot", "data.frame",
                 panel.text(x, y, mds.d$labels[subscripts], cex=cex)
               }, ...)
             }
-            return(p)
+            print(p)
+
+            invisible(mds.d)
           })

@@ -1,6 +1,6 @@
-\name{RNASeqTools-package}
-\alias{RNASeqTools-package}
-\alias{RNASeqTools}
+\name{test-package}
+\alias{test-package}
+\alias{test}
 \docType{package}
 \title{
 What the package does (short line)
@@ -12,11 +12,12 @@ More about what it does (maybe more than one line)
 }
 \details{
 \tabular{ll}{
-Package: \tab RNASeqTools\cr
+Package: \tab test\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
 Date: \tab 2012-01-19\cr
 License: \tab What license is it under?\cr
+Depends: \tab methods\cr
 }
 ~~ An overview of how to use the package, including the most important ~~
 ~~ functions ~~
