@@ -1,0 +1,9 @@
+Package: RNASeqTools
+Type: Package
+Title: A collection of the UCD Bioinformatics Core's helpful tools for RNA-seq analysis
+Version: 1.0
+Date: 2012-01-19
+Author: Vince Buffalo
+Maintainer: Vince Buffalo <vsbuffalo@ucdavis.edu>
+Description: This package contains some functions we use internally for RNA-seq analysis projects.
+License: GPL 1.0
