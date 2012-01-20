@@ -27,7 +27,13 @@ setMethod("mdsPlot", "data.frame",
           })
 
 setMethod("mdsPlot", "CountDataSet",
-          function(x, conds=NULL, cex=1, ...) stop("Not yet implemented."))
+          function(x, conds=NULL, cex=1, ...) {
+            if (all(is.na(sizeFactors(x))))
+              x <- estimateSizeFactors(x)
+            tmp <- estimateDispersions(x, method="blind")
+            vsd <- getVarianceStabilizedData(tmp)
+            mdsPlot(vsd, conds, cex, ...)
+          })
 
 setMethod("mdsPlot", "matrix",
           function(x, conds=NULL, cex=1, ...) mdsPlot(as.data.frame(x), conds, cex, ...))
