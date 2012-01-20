@@ -1,1 +1,6 @@
 exportPattern("^[[:alpha:]]+")
+exportMethods(
+    "joinColumns",
+    "mdsPlot",
+    "sumTrancripts2Genes" 
+)

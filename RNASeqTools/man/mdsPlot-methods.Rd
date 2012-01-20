@@ -23,5 +23,29 @@
     for more details.}
   \item{\dots}{Further arguments passsed to lattice's \code{xyplot}.}
 }
+
+\author{Vince Buffalo <vsbuffalo@ucdavis.edu>}
+\section{Methods}{
+  \item{\code{signature(x = "data.frame")}}{
+    This method makes a plot of the dimensionality-reduced data (using
+    MDS) from a data.frame. It returns a dataframe of the data used to
+    produced the plot.
+  \item{\code{signature(x = "matrix")}}{
+    Same as above.
+  \item{\code{signature(x = "CountDataSet")}}{
+    This method makes a plot of the dimensionality-reduced data (using
+    MDS) from an object of class \code{CountDataSet}, the variance
+    stabilized data is used.
+}
+
+
+\examples{
+  library(pasilla)
+  data(pasillaGenes)
+  d <- counts(pasillaGenes)[, pData(pasillaGenes)$type=="paired-end"]
+  conds <- as.character(pData(pasillaGenes)$condition[pData(pasillaGenes)$type=="paired-end"])
+  mdsPlot(d, conds=conds)
+}
+
 \keyword{methods}
 \keyword{diagnostics,plots}

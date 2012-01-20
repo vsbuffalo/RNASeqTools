@@ -25,7 +25,7 @@
 \author{Vince Buffalo <vsbuffalo@ucdavis.edu>}
 \section{Methods}{
   \item{\code{signature(x = "data.frame")}}{
-  This joins the columns of dataframe \code{x} according to the
+  This method joins the columns of dataframe \code{x} according to the
   groupings in \code{group} with the function \code{fun}.
 }
 }
@@ -38,12 +38,14 @@ b_paired=rnorm(100), b_single=rnorm(100))
 
   ## This shows a good way to extract groups from colnames by removing
   ## single and paired strings from column names.
-  groups <- gsub("([ab])_.*", "\\1", colnames(d))
+  groups <- gsub("([ab])_.*", "\\\\1", colnames(d)) ## alternate way
+
   d.joined <- joinColumns(d, groups)
 
   ## check that results are consistent.
-  stopifnot(rowSums(d[, 1:2]) == d.joined[, 1] && rowSums(d[, 3:4]) ==
-  d.joined[, 2])
+  eps <- 1e4
+  stopifnot(rowSums(d[, c(1, 2)]) - d.joined[, 1] < eps &&
+    rowSums(d[, c(3, 4)]) - d.joined[, 2] < eps)
 }
 
 \keyword{methods}

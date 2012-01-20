@@ -6,11 +6,13 @@ setMethod("joinColumns", "data.frame",
             # number of columns as unique integers in groups.
             out <- vector('list', length(unique(groups)))
             
-            for (level in unique(groups)) {
-              ci <- which(groups == level)
-              out[[level]] <- fun(x[, ci])
-            }
+            out <- lapply(unique(groups), function(g) {
+              ci <- which(groups == g)
+              fun(x[, ci])
+            })
+            names(out) <- unique(groups)
             d <- as.data.frame(do.call(cbind, out))
+            
             rownames(d) <- rownames(x)
             d
           })

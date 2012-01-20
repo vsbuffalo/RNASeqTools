@@ -2,13 +2,13 @@
 
 setMethod("mdsPlot", "data.frame", 
           function(x, conds=NULL, cex=1, ...) {
-            d <- dist(x)
+            d <- dist(t(x))
             
             mds.fit <- cmdscale(d, eig=TRUE, k=2)
             
             mds.d <- data.frame(x1=mds.fit$points[, 1],
                                 x2=mds.fit$points[, 2],
-                                labels=rownames(x))
+                                labels=colnames(x))
             if (!is.null(conds))
               mds.d$treatment <- as.factor(conds)
             
@@ -25,3 +25,9 @@ setMethod("mdsPlot", "data.frame",
 
             invisible(mds.d)
           })
+
+setMethod("mdsPlot", "CountDataSet",
+          function(x, conds=NULL, cex=1, ...) stop("Not yet implemented."))
+
+setMethod("mdsPlot", "matrix",
+          function(x, conds=NULL, cex=1, ...) mdsPlot(as.data.frame(x), conds, cex, ...))
