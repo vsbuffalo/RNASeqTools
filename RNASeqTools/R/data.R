@@ -1,14 +1,16 @@
 ## data.R -- functions for manipulating RNA-Seq data
 
 setMethod("joinColumns", "data.frame",
-          function(x, groups, fun=rowSums) {
+          function(x, groups) {
             # the result will have the same number of rows as x, and the same
             # number of columns as unique integers in groups.
+            if (ncol(x) != length(groups))
+              stop("groups must be the same length as the number of columns of x.")
             out <- vector('list', length(unique(groups)))
             
             out <- lapply(unique(groups), function(g) {
               ci <- which(groups == g)
-              fun(x[, ci])
+              rowSums(x[, ci])
             })
             names(out) <- unique(groups)
             d <- as.data.frame(do.call(cbind, out))
@@ -17,7 +19,7 @@ setMethod("joinColumns", "data.frame",
             d
           })
 
-setMethod("sumTrancripts2Genes", "data.frame", 
+setMethod("joinRows", "data.frame", 
           function(x, mapping) {
             if (!(is.data.frame(x) && is.data.frame(mapping)))
               stop("x and mapping must be dataframes.")
@@ -29,8 +31,13 @@ setMethod("sumTrancripts2Genes", "data.frame",
             not.found <- sum(is.na(ii))
             
             if (not.found > 0)
-              warning(sprintf("%d transcripts were not found in the mapping file. If this number is high, check the the second column is the transcript IDs!", not.found))
+              warning(sprintf("%d row IDs were not found in the mapping file. If this number is high, check the the second column contains the correct IDs (often transcripts or exon IDs)!", not.found))
             
             tmp <- split(x, list(genes=mapping[ii, 1]))
             do.call(rbind, lapply(tmp, colSums))
+          })
+
+setMethod("joinRows", "matrix",
+          function(x, mapping) {
+            joinRows(as.data.frame(x), mapping)
           })

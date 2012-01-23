@@ -1,6 +1,8 @@
+import(ggplot2)
 exportPattern("^[[:alpha:]]+")
 exportMethods(
-    "joinColumns",
-    "mdsPlot",
-    "sumTrancripts2Genes" 
+              "joinColumns",
+              "mdsPlot",
+              "joinRows",
+              "countDistribution"
 )

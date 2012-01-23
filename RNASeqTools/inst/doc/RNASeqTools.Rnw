@@ -1,0 +1,54 @@
+%\VignetteIndexEntry{Using the RNASeqTools package in RNA-Seq analyses}
+%\VignettePackage{RNASeqTools}
+
+\documentclass{article}
+
+\usepackage{Sweave}
+\usepackage[a4paper]{geometry}
+\usepackage{hyperref,graphicx}
+
+\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5} 
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{{\small\texttt{#1}}}
+
+\author{Vince Buffalo\\[1em]Bioinformatics Core\\ UC Davis Genome Center\\[1em]
+\texttt{vsbuffalo@ucdavis.edu}}
+
+\title{\textsf{\textbf{Using the \Rpackage{RNASeqTools} package in RNA-Seq analyses}}}
+
+\date{2010-01-19}
+
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+  
+\end{abstract}
+
+\section{Data Manipulation}
+
+\texttt{RNASeqTools} has functions to do common operations on RNA-seq
+count data. 
+
+<<echo=TRUE>>=
+library(RNASeqTools)
+library(pasilla)
+data(pasillaGenes)
+data(pasillaExons)
+
+
+@ 
+
+
+\section{Diagnostics}
+
+\section{Session Info}
+<<>>=
+sessionInfo()
+@
+
+\end{document}

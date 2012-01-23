@@ -1,17 +1,17 @@
 \name{joinColumns-methods}
 \docType{methods}
+\alias{joinColumns}
 \alias{joinColumns-methods}
 \alias{joinColumns,data.frame-method}
 \title{Join Columns of a Dataframe Together}
 \description{
   \code{joinColumns} takes a dataframe and a vector of groups the same
   length of as the number of columns and joins
-  the columns according to the specified function (by default
-  \code{rowSums}).
+  the columns by adding them.
 }
 
 \usage{
-  joinColumns(x, groups, fun=rowSums)
+  joinColumns(x, groups)
 }
 
 \arguments{
@@ -19,15 +19,21 @@
   \item{groups}{a character or integer vector of groups with length
     equal to the number of columns in \code{x}. Elements with the same
   value will be joined by \code{fun}.}
-  \item{fun}{a function to join the columns to be grouped.}
 }
 
-\author{Vince Buffalo <vsbuffalo@ucdavis.edu>}
+
 \section{Methods}{
-  \item{\code{signature(x = "data.frame")}}{
-  This method joins the columns of dataframe \code{x} according to the
-  groupings in \code{group} with the function \code{fun}.
+  \describe{
+    \item{\code{signature(x = "data.frame")}}{
+      This method joins the columns of dataframe \code{x} according to the
+      groupings in \code{group}.
+    }
+  }
 }
+
+\value{
+  A dataframe with the same number of columns as unique elements in
+  \code{groups} and same number of rows as \code{x}.
 }
 
 \examples{
@@ -47,6 +53,6 @@ b_paired=rnorm(100), b_single=rnorm(100))
   stopifnot(rowSums(d[, c(1, 2)]) - d.joined[, 1] < eps &&
     rowSums(d[, c(3, 4)]) - d.joined[, 2] < eps)
 }
-
+\author{Vince Buffalo <vsbuffalo@ucdavis.edu>}
 \keyword{methods}
 \keyword{data-manipulation}
