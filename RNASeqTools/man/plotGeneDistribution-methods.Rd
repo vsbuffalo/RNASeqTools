@@ -15,7 +15,7 @@
 }
 
 \usage{
-  plotGeneDistribution(x)
+  plotGeneDistribution(x, showTopGenes=FALSE, showZeros=FALSE)
 }
 
 \arguments{
@@ -25,15 +25,15 @@
     position and raw counts of the top 1\% genes.}
   \item{showZeros}{a logical indicating whether to draw a vertical line
     at the position in which genes have zero counts.}
-  }
 }
+
 
 
 \section{Methods}{
   \describe{
 
     \item{\code{signature(x = "data.frame")}}{
-      Make a gene count distribution plot for each sample.
+      Plot a gene count distribution for each sample.
     }
 
     \item{\code{signature(x = "data.frame")}}{

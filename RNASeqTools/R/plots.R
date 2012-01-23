@@ -43,10 +43,21 @@ setMethod("mdsPlot", "matrix",
           function(x, conds=NULL, cex=1, ...) mdsPlot(as.data.frame(x), conds, cex, ...))
 
 
-sampleDensity <- function(x) {
+setMethod("countDensity", "data.frame", function(x) {
   tmp <- stack(x)
-  densityplot(~ values, group=ind, data=tmp, scales=list(x = list(log=TRUE)))
-}  
+  densityplot(~ values, group=ind, data=tmp, scales=list(x = list(log=TRUE)),
+              xlab="counts (log10 scale)", ylab="density", plot.points=FALSE)
+})
+
+setMethod("countDensity", "matrix", function(x) {
+  tmp <- as.data.frame(x)
+  countDensity(tmp)
+})
+
+setMethod("countDensity", "CountDataSet", function(x) {  
+  countDensity(as.data.frame(counts(x)))
+})
+
 
 geneDistribution <- function(x) {
   # Order genes from high counts to low counts, and then return a

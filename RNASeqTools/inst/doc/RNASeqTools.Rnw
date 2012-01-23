@@ -7,7 +7,7 @@
 \usepackage[a4paper]{geometry}
 \usepackage{hyperref,graphicx}
 
-\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5} 
+\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5}
 \newcommand{\Robject}[1]{\texttt{#1}}
 \newcommand{\Rpackage}[1]{\textit{#1}}
 \newcommand{\Rclass}[1]{\textit{#1}}
@@ -18,7 +18,7 @@
 
 \title{\textsf{\textbf{Using the \Rpackage{RNASeqTools} package in RNA-Seq analyses}}}
 
-\date{2010-01-19}
+\date{2012-01-23}
 
 \begin{document}
 
@@ -31,20 +31,120 @@
 
 \section{Data Manipulation}
 
-\texttt{RNASeqTools} has functions to do common operations on RNA-seq
-count data. 
+\subsection{Combining Columns of Gene Expression Count Data}
+
+Often quality control steps remove some single reads from paired-end
+data, leaving a column of counts for the paired-end mapping and
+separate column of single-end counts. It is standard to combine these
+columns by adding them, which depending on the number of treatment
+groups and replicates can be difficult. \texttt{RNASeqTools} contains a
+function \texttt{joinColumns} for this. It takes in the original
+dataframe, and a factor vector or character vector indicating which
+columns to combine.
 
 <<echo=TRUE>>=
 library(RNASeqTools)
-library(pasilla)
-data(pasillaGenes)
-data(pasillaExons)
+
+d <- data.frame(a_paired=rpois(100, 100), a_single=rpois(100, 100),
+                b_paired=rpois(100, 100), b_single=rpois(100, 100))
+
+## This shows a good way to extract groups from colnames by removing
+## single and paired strings from column names.
+groups <- gsub("([ab])_.*", "\\\\1", colnames(d)) ## alternate way
+
+d.joined <- joinColumns(d, groups)
+@
+
+\subsection{Combining Rows of Gene Expression Data}
+
+If data is at the transcript-level (i.e. after mapping to a
+transcriptome and getting counts with a tool like
+\texttt{sam2counts.py}), one may wish to aggregate trancript-level
+counts to gene-level counts. This requires a table (a dataframe in R)
+that contains a one-to-many mapping of genes to
+transcripts. \texttt{RNASeqTools} has the function \texttt{joinRows} to do
+this. It is also useful for combining exon-level data into gene-level
+data, as shown below.
+
+<<echo=TRUE>>=
+  library(pasilla)
+  data(pasillaExons)
+
+  ## create a mapping file
+  d <- counts(pasillaExons)
+  tmp <- do.call(rbind, strsplit(rownames(counts(pasillaExons)), ":"))
+  gene.exon.mapping <- data.frame(gene=tmp[, 1], exon=rownames(counts(pasillaExons)))
+
+  ## join exons to genes
+  d.joined <- joinRows(d, gene.exon.mapping)
+@ 
+
+\section{Diagnostics}
+\subsection{Count Distribution Plots}
+\texttt{RNASeqTools} also contains functions to diagnose problems in
+RNA-seq data by visual inspection. For example, one can easily check
+how a few genes may dominate total sample counts using
+\texttt{plotGeneDistribution} as in Figure \ref{fig:plotGeneDistribution}.
+
+\begin{figure}
+\centering
+\includegraphics{RNASeqTools-figPlotGeneDistribution}
+\caption{A plot of how much certain highly-expressed genes dominate a sample.}
+\label{fig:plotGeneDistribution}
+\end{figure}
+
+<<figPlotGeneDistribution,echo=TRUE,fig=TRUE,width=7,height=6>>=
+  data(pasillaGenes)
+  plotGeneDistribution(pasillaGenes, showTopGenes=TRUE, showZeros=TRUE)
+@ 
+
+There are two points of interest which can optionally be highlighted
+in this graphic: the counts of the top 1\% of genes (with
+\texttt{showTopGenes=TRUE}) and how much of the sample is dominated by
+zero counts (with \texttt{showZeros=TRUE}).
+
+The log10 density of each sample's counts is also useful, especially
+in inspecting if samples radically differ from each other. This plot
+is produced with \texttt{countDensity}, as in Figure
+\ref{fig:countDensity}.
 
 
+\begin{figure}
+\centering
+\includegraphics{RNASeqTools-figCountDensity}
+\caption{A plot of each sample's density, log10-transformed.}
+\label{fig:countDensity}
+\end{figure}
+
+<<figCountDensity,echo=TRUE,fig=TRUE,width=7,height=6>>=
+  countDensity(pasillaGenes)
+@ 
+
+This bimodal distribution is normal, as there are many genes with zero
+counts (the first hump), but most genes have moderate expression (the
+second hump).
+
+If sample concentrations were to vary considerably, the density plot
+may look like Figure \ref{fig:countDensity2} (before normalization).
+
+
+
+\begin{figure}
+\centering
+\includegraphics{RNASeqTools-figCountDensity2}
+\caption{A plot of each sample's density, log10-transformed and
+  simulated differing concentrations.}
+\label{fig:countDensity2}
+\end{figure}
+
+<<figCountDensity2,echo=TRUE,fig=TRUE,width=7,height=6>>=
+  set.seed(0)
+  unnorm.d <- as.data.frame(counts(pasillaGenes))
+  unnorm.d <- apply(unnorm.d, 2, function(x) x*runif(1, 1, 7))
+  countDensity(pasillaGenes)
 @ 
 
 
-\section{Diagnostics}
 
 \section{Session Info}
 <<>>=

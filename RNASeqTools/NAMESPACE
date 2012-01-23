@@ -1,8 +1,9 @@
-import(ggplot2)
+import(lattice)
 exportPattern("^[[:alpha:]]+")
 exportMethods(
               "joinColumns",
               "mdsPlot",
               "joinRows",
-              "countDistribution"
+              "plotGeneDistribution",
+              "countDensity"
 )

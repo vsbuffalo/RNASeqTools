@@ -4,7 +4,7 @@ Title: A collection of the UCD Bioinformatics Core's tools for RNA-seq analysis
 Version: 1.0
 Date: 2012-01-19
 Author: Vince Buffalo
-Depends: DESeq, methods
+Depends: DESeq, lattice, methods
 Suggests: pasilla
 Maintainer: Vince Buffalo <vsbuffalo@ucdavis.edu>
 Description: This package contains some functions we use internally for RNA-seq analysis projects.
