@@ -152,6 +152,9 @@ setMethod("plotLibSizeSensitivity", "data.frame",
             invisible(d)
           })
 
+setMethod("plotLibSizeSensitivity", "data.frame",
+          function(x) plotLibSizeSensitivity(as.data.frame(x)))
+
 setMethod("plotLibSizeSensitivity", "CountDataSet",
           function(x) {
             conds <- pData(x)$condition
