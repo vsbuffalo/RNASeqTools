@@ -14,6 +14,7 @@ setMethod("mdsPlot", "data.frame",
             
             if (!is.null(conds)) {
               p <- xyplot(x2 ~ x1, group=treatment, data=mds.d, panel=function(x, y, ..., groups, subscripts) {
+                              
                 panel.text(x, y, mds.d$labels[subscripts], cex=cex, col=trellis.par.get()$superpose.line$col[groups])
               }, ...)
             } else {
@@ -66,7 +67,8 @@ geneDistribution <- function(x) {
   i <- quantile(x, probs=seq(1, 0, -0.01))
   total <- sum(x)
   y <- sapply(i, function(p) sum(x[x >= p]))
-  data.frame(x=1:length(y), y=y, y.percent.total=y/total)
+  num.genes <- sapply(i, function(p) sum(x >= p))
+  data.frame(x=1:length(y), y=y, y.percent.total=y/total, num.genes)
 }
   
 setMethod("plotGeneDistribution", "data.frame",
@@ -84,6 +86,7 @@ setMethod("plotGeneDistribution", "data.frame",
                         xlab="% of genes contributing (ordered high to low)",
                         ylab="% of total counts",
                         auto.key=list(columns=3, space="bottom"),
+                        par.settings=simpleTheme(pch=20),
                         panel=function(x, y, groups, ...) {
                           if (showTopGenes) {
                             tmp <- d[d$percent == 99, ]
@@ -116,3 +119,58 @@ setMethod("plotGeneDistribution", "CountDataSet", function(x, showTopGenes=FALSE
   plotGeneDistribution(d, showTopGenes, showZeros)
 })
 
+
+ 
+### TO ADD: function that takes vector of p-values, gene lengths and looks for relationship
+mart <- useMart("ensembl")
+ensembl <- useDataset("dmelanogaster_gene_ensembl", mart)
+
+plotLengthPval <- function(lengths, pvals, highlight=0.1) {
+  plot(log10(lengths), -log10(pvals), type='n',
+       xlab="gene or transcript length (log10)", ylab="-log10 p-value")
+  points(log10(lengths), -log10(pvals), col=ifelse(pvals <= highlight, "red", "black"),
+         pch=19, cex=0.3)
+  smallest.dig.gene <- min(na.exclude(lengths[pvals <= highlight]))
+  abline(v=log10(smallest.dig.gene), lty=2, lwd=0.4)
+  invisible(smallest.dig.gene)
+}
+
+
+setMethod("plotLibSizeSensitivity", "data.frame",
+          function(x) {
+            locfunc <- median ## see getMethod("estimateSizeFactors", "CountDataSet")
+            size.factors <- estimateSizeFactorsForMatrix(x, locfunc)
+            num.zeros <- apply(x==0, 2, sum)
+            d <- data.frame(sample=colnames(x), size.factors, num.zeros)
+            p <- xyplot(num.zeros ~ size.factors, group=sample, data=d,
+                        pch=19, auto.key=list(columns=3, space="bottom"),
+                        par.settings=simpleTheme(pch=20),
+                        xlab="size factors (estimated using procedure in DESeq)",
+                        ylab="number of genes/transcripts with zero counts",
+                        main=sprintf("Library Size and Number of Zero Counts\n(Spearman Correlation is %.2f)", cor(num.zeros, size.factors, method="spearman")))
+            print(p)
+            invisible(d)
+          })
+
+setMethod("plotLibSizeSensitivity", "CountDataSet",
+          function(x) {
+            conds <- pData(x)$condition
+            locfunc <- median ## see getMethod("estimateSizeFactors", "CountDataSet")
+            cds <- estimateSizeFactors(x)
+            size.factors <- sizeFactors(cds)
+            num.zeros <- apply(counts(x)==0, 2, sum)
+            d <- data.frame(sample=colnames(counts(x)), condition=conds, size.factors, num.zeros)
+            p <- xyplot(num.zeros ~ size.factors, group=condition, data=d,
+                        pch=19, #auto.key=list(columns=3, space="bottom"),
+                        par.settings=simpleTheme(pch=20),
+                        xlab="size factors (estimated using procedure in DESeq)",
+                        ylab="number of genes/transcripts with zero counts",
+                        main=sprintf("Library Size and Number of Zero Counts\n(Spearman Correlation is %.2f)", cor(num.zeros, size.factors, method="spearman")),
+                        panel=function(x, y, groups, subscripts, ...) {
+                          panel.text(x, y, d$sample[subscripts],
+                                     col=trellis.par.get()$superpose.line$col[groups])
+                          panel.xyplot(x, y, groups, ...)
+                        })
+            print(p)
+            invisible(d)
+          })

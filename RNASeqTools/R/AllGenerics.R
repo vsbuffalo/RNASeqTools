@@ -5,3 +5,4 @@ setGeneric("joinColumns", signature="x", function(x, groups) standardGeneric("jo
 setGeneric("plotGeneDistribution", signature="x", function(x, showTopGenes=FALSE, showZeros=FALSE) standardGeneric("plotGeneDistribution"))
 setGeneric("joinRows", signature="x", function(x, mapping) standardGeneric("joinRows"))
 setGeneric("countDensity", signature="x", function(x) standardGeneric("countDensity"))
+setGeneric("plotLibSizeSensitivity", signature="x", function(x) standardGeneric("plotLibSizeSensitivity"))

@@ -80,7 +80,7 @@ data, as shown below.
 @ 
 
 \section{Diagnostics}
-\subsection{Count Distribution Plots}
+\subsection{Count and Gene Distribution Plots}
 \texttt{RNASeqTools} also contains functions to diagnose problems in
 RNA-seq data by visual inspection. For example, one can easily check
 how a few genes may dominate total sample counts using
@@ -141,9 +141,36 @@ may look like Figure \ref{fig:countDensity2} (before normalization).
   set.seed(0)
   unnorm.d <- as.data.frame(counts(pasillaGenes))
   unnorm.d <- apply(unnorm.d, 2, function(x) x*runif(1, 1, 7))
-  countDensity(pasillaGenes)
+  countDensity(unnorm.d)
 @ 
 
+\subsection{MDS treatment plots}
+
+Exploratory Data Analysis of RNA-seq data is a very important
+step. One can verify that replicates are similar by using a MDS plot,
+which reduces the dimensionality of dataframe of $n$ samples and $p$
+genes to two dimensions for each of the $n$ samples. Often one expects
+replicates from each treatment group to cluster together as in
+\ref{fig:MDSPlot}.
+
+
+\begin{figure}
+\centering
+\includegraphics{RNASeqTools-figMDSPlot}
+\caption{An MDS plot of treatments for the \texttt{pasillaGenes} data set.}
+\label{fig:MDSPlot}
+\end{figure}
+
+<<figMDSPlot,echo=TRUE,fig=TRUE,width=7,height=6>>=
+  mdsPlot(pasillaGenes)
+@ 
+
+If one is not working with objects of class \texttt{CountDataSet} as
+above, a \texttt{data.frame} and vector of conditions can be manually specified:
+
+<<echo=TRUE>>=
+  mdsPlot(unnorm.d, conds=pData(pasillaGenes)$condition)
+@
 
 
 \section{Session Info}
