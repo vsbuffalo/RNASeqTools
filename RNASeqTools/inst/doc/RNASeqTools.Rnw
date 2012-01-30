@@ -44,6 +44,8 @@ columns to combine.
 
 <<echo=TRUE>>=
 library(RNASeqTools)
+library(DESeq)
+
 
 d <- data.frame(a_paired=rpois(100, 100), a_single=rpois(100, 100),
                 b_paired=rpois(100, 100), b_single=rpois(100, 100))
@@ -171,6 +173,80 @@ above, a \texttt{data.frame} and vector of conditions can be manually specified:
 <<echo=TRUE>>=
   mdsPlot(unnorm.d, conds=pData(pasillaGenes)$condition)
 @
+
+\subsection{Library Size Diagnostics}
+\texttt{RNASeqTools} also has diagnostic plot function
+\texttt{plotLibSizeSensitivity} for looking at library size and how it
+impacts the number of genes found in a sample (those with more than
+zero counts). There is a known relationship between sequencing depth
+and the number of genes found in a sample. This looks at the number of
+genes with zero counts and the library size, as estimated by the
+\texttt{DESeq} package's \texttt{estimateSizeFactorsForMatrix}
+function.
+
+\begin{figure}
+\centering
+\includegraphics{RNASeqTools-figPlotLibSizeSensitivity}
+\caption{A plot indicating the library size (as estimated by \texttt{DESeq} size factors) and the number of genes with zero counts.}
+\label{fig:PlotLibSizeSensitivity}
+\end{figure}
+
+<<figPlotLibSizeSensitivity,echo=TRUE,fig=TRUE,width=7,height=6>>=
+  plotLibSizeSensitivity(d)
+@ 
+
+If one uses an object of class \texttt{CountDataSet} with
+\texttt{plotLibSizeSensitivity}, a method that colors samples by
+treatment group will be called. This can be used to inspect whether a
+treatment group's replicates (by unfortunate chance) all have small
+library sizes, leading there to be poorer detection of low-count
+genes.
+
+<<echo=TRUE>>=
+  plotLibSizeSensitivity(pasillaGenes)
+@
+
+\subsection{P-value and Gene/Transcript Length Diagnostics}
+Oshlack et al, 2009 have shown that there is less power in detecting
+differential expression in genes/transcripts with shorter
+lengths. \texttt{plotLengthPval} is a function that takes a vector of
+gene/transcript lengths and a vector of corresponding p-values and
+creates a diagnostic plot to look at how much sequence length impacts
+differential expression.
+
+\begin{figure}
+\centering
+\includegraphics{RNASeqTools-figPlotLengthPval}
+\caption{A plot of gene/transcript lengths versus -log10 p-values,
+  with differentially expressed genes highlighted.}
+\label{fig:PlotLengthPval}
+\end{figure}
+
+<<figPlotLengthPval,echo=TRUE,fig=TRUE,width=7,height=6>>=
+  library(biomaRt)
+  data(pasillaGenes)
+
+  ## extact count data and make a plot with raw counts
+  d <- counts(pasillaGenes)
+
+  mart <- useMart("ensembl")
+  ensembl <- useDataset("dmelanogaster_gene_ensembl", mart)
+  length.df <- getBM(attributes=c("ensembl_gene_id", "start_position",
+    "end_position"), filters="ensembl_gene_id",
+    values=rownames(counts(pasillaGenes)), mart=ensembl)
+  length.df$length <- abs(length.df$end_position -
+    length.df$start_position)
+
+  cds <- newCountDataSet(counts(pasillaGenes),
+    pData(pasillaGenes)$condition)
+  cds <- estimateSizeFactors(cds)
+  cds <- estimateDispersions(cds)
+  res <- nbinomTest(cds, "treated", "untreated")
+  res$length <- length.df$length[match(res$id, length.df$ensembl_gene_id)]
+  plotLengthPval(res$length, res$padj)
+@ 
+
+
 
 
 \section{Session Info}

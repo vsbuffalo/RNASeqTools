@@ -17,7 +17,7 @@
   counts is not a robust estimate of library size, as a few highly
   expressed genes could dominate total sample counts. Instead,
   plotLibSizeSensitivity uses the size factors estimated by
-  \code{DESeq}'s \code{estimateSizeFactorsForMatrix}. See
+  \code{DESeq} packages's \code{estimateSizeFactorsForMatrix}. See
   \code{\link{estimateSizeFactorsForMatrix}} for the procedure.
 }
 

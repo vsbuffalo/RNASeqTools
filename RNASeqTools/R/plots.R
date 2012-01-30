@@ -136,6 +136,16 @@ plotLengthPval <- function(lengths, pvals, highlight=0.1) {
 }
 
 
+plotLengthSensitivity <- function(lengths, pvals, length.range=c(0, 7000), bin.size=100) {
+  tmp <- data.frame(lengths, pvals)
+  d <- subset(tmp, lengths >= length.range[1] & lengths <= length.range)
+
+  lcuts <- cut2(d$lengths, m=bin.size)
+  
+  dd <- aggregate(d$pvals, list(length=lcuts), function(x) sum(na.exclude(x < 0.05))/length(na.exclude(x)))
+  plot(dd)
+}
+
 setMethod("plotLibSizeSensitivity", "data.frame",
           function(x) {
             locfunc <- median ## see getMethod("estimateSizeFactors", "CountDataSet")
@@ -152,7 +162,7 @@ setMethod("plotLibSizeSensitivity", "data.frame",
             invisible(d)
           })
 
-setMethod("plotLibSizeSensitivity", "data.frame",
+setMethod("plotLibSizeSensitivity", "matrix",
           function(x) plotLibSizeSensitivity(as.data.frame(x)))
 
 setMethod("plotLibSizeSensitivity", "CountDataSet",
@@ -177,3 +187,40 @@ setMethod("plotLibSizeSensitivity", "CountDataSet",
             print(p)
             invisible(d)
           })
+
+
+## TO ADD: MA-plot with interact=true option for gene selection.
+calcMA <- function(x, conds, xlog) {
+  a <- xlog(rowMeans(x))
+  unique.conds <- unique(conds)
+  stopifnot(length(unique.conds) == 2)
+  mean.a <- rowMeans(x[, unique.conds[1] == conds])
+  mean.b <- rowMeans(x[, unique.conds[2] == conds])
+  
+  m <- log2(mean.a/mean.b)
+  d <- data.frame(m, a)
+  d
+}
+
+MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, interact=FALSE, xlog=log10,
+                   xlab="mean counts (log10)", ylab="log fold change") {
+
+  d <- calcMA(x, conds, xlog)
+  # Remove NAs (due to 0 counts), but plot them separately
+  x.adj <- x[which(!is.finite(d$m)), ]
+  x.adj <- x.adj + 1
+  d.adj <- calcMA(x.adj, conds, xlog)
+
+  if (!is.null(pval)) {
+    d$pval <- pval
+    plot(d$a, d$m, type='n', xlab=xlab, ylab=ylab)
+    points(d$a, d$m, pch=19, cex=0.1, col=ifelse(d$pval <= highlight, "red", "black"))
+    points(runif(nrow(d.adj), -1.5, -0.5), d.adj$m, pch=19, cex=0.1, col=ifelse(d$pval <= highlight, "green", "purple"))
+    
+  } else {
+    plot(d$a, d$m, type='n', xlab=xlab, ylab=ylab)
+    points(d$a, d$m, pch=19, cex=0.1)
+    points(runif(nrow(d.adj), -1.5, -0.5), d.adj$m, pch=19, cex=0.1, col="purple")
+  }
+  
+}
