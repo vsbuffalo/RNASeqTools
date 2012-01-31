@@ -202,25 +202,44 @@ calcMA <- function(x, conds, xlog) {
   d
 }
 
-MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, interact=FALSE, xlog=log10,
-                   xlab="mean counts (log10)", ylab="log fold change") {
+MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
+                   xlab="mean counts (log10)", ylab="log fold change", cex=0.2, returnSmear=FALSE) {
 
   d <- calcMA(x, conds, xlog)
+  
   # Remove NAs (due to 0 counts), but plot them separately
-  x.adj <- x[which(!is.finite(d$m)), ]
-  x.adj <- x.adj + 1
-  d.adj <- calcMA(x.adj, conds, xlog)
+  adj.i <- !is.finite(d$m) | !is.finite(d$a)
+  
+  x.adj <- x
+  x.adj[adj.i, ] <- x.adj[adj.i, ] + 1 # adjust counts only when necessary
+  d <- calcMA(x.adj, conds, xlog)
+  d$adjusted <- adj.i
 
+  # scale the plot's x-axis to allow smears
+  xmax.scaler <- 1.005
+  xmax <- max(d$m[is.finite(d$m)]) * xmax.scaler
+  xmin <- -1.2
+  
   if (!is.null(pval)) {
     d$pval <- pval
-    plot(d$a, d$m, type='n', xlab=xlab, ylab=ylab)
-    points(d$a, d$m, pch=19, cex=0.1, col=ifelse(d$pval <= highlight, "red", "black"))
-    points(runif(nrow(d.adj), -1.5, -0.5), d.adj$m, pch=19, cex=0.1, col=ifelse(d$pval <= highlight, "green", "purple"))
-    
-  } else {
-    plot(d$a, d$m, type='n', xlab=xlab, ylab=ylab)
-    points(d$a, d$m, pch=19, cex=0.1)
-    points(runif(nrow(d.adj), -1.5, -0.5), d.adj$m, pch=19, cex=0.1, col="purple")
+    plot(d$a, d$m, xlab=xlab, ylab=ylab, xlim=c(xmin, xmax), type='n')
+    points(d$a[!d$adjusted], d$m[!d$adjusted], col=ifelse(d$pval[!d$adjusted] <= highlight, "red", "black"), cex=cex)
+    if (smear) {
+      save.before.smear <- d$a[d$adjusted]
+      d$a[d$adjusted] <- runif(sum(d$adjusted), -1, -0.5) 
+      points(d$a[d$adjusted], d$m[d$adjusted], col=ifelse(d$pval[d$adjusted] <= highlight, "orange", "purple"), cex=cex)
+    } else
+      points(d$a[d$adjusted], d$m[d$adjusted], col=ifelse(d$pval[d$adjusted] <= highlight, "orange", "purple"), cex=cex)
   }
-  
+
+  if (interact) {
+    return(rownames(d)[identify(d$a, d$m, labels=rownames(d), pos=FALSE)])
+  }
+
+  # We don't want to return fake data (from smearing), so let's change
+  # it back. This returns the adjusted data.
+  if (!returnSmear)
+    d$a[d$adjusted] <- save.before.smear
+
+  invisible(d)
 }
