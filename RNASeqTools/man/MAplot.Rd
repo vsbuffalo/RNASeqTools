@@ -30,7 +30,9 @@
   \code{interact=TRUE} arguement.
 }
 \usage{
-MAplot(x, conds = NULL, pval = NULL, highlight = 0.1, smear = TRUE, interact = FALSE, xlog = log10, xlab = "mean counts (log10)", ylab = "log fold change", cex = 0.2, returnSmear = FALSE, adj.fun = addOne)
+  MAplot(x, conds = NULL, pval = NULL, highlight = 0.1, smear = TRUE,
+  interact = FALSE, xlog = log10, xlab = "mean counts (log10)",
+  ylab = "log fold change", cex = 0.2, returnSmear = FALSE, adj.fun = addOne)
 }
 
 \arguments{

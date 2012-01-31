@@ -204,14 +204,14 @@ calcMA <- function(x, conds, xlog) {
 
 addOne <- function(x) x + 1
 
-MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
+MAplotFun <- function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
                    xlab="mean counts (log10)", ylab="log fold change", cex=0.2, returnSmear=FALSE,
                    adj.fun=addOne) {
   if (length(conds) != ncol(x))
     stop("The length of conds must be equal to the number of columns of x.")
 
   if (length(highlight) != 1)
-    stop("highlight must be a numeric value (not a vector of length > 1).")
+    stop("highlight must be a numeric value with length 1.")
   d <- calcMA(x, conds, xlog)
   
   # Remove NAs (due to 0 counts), but plot them separately
@@ -252,7 +252,7 @@ MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact
   invisible(d)
 }
 
-setMethod("MAplot", "data.frame", MAplot)
+setMethod("MAplot", "data.frame", MAplotFun)
 setMethod("MAplot", "matrix",
           function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
                    xlab="mean counts (log10)", ylab="log fold change", cex=0.2, returnSmear=FALSE,
