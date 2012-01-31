@@ -6,3 +6,4 @@ setGeneric("plotGeneDistribution", signature="x", function(x, showTopGenes=FALSE
 setGeneric("joinRows", signature="x", function(x, mapping) standardGeneric("joinRows"))
 setGeneric("countDensity", signature="x", function(x) standardGeneric("countDensity"))
 setGeneric("plotLibSizeSensitivity", signature="x", function(x) standardGeneric("plotLibSizeSensitivity"))
+setGeneric("MAplot", signature="x", function(x) standardGeneric("MAplot"))

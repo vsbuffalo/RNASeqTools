@@ -122,8 +122,8 @@ setMethod("plotGeneDistribution", "CountDataSet", function(x, showTopGenes=FALSE
 
  
 ### TO ADD: function that takes vector of p-values, gene lengths and looks for relationship
-mart <- useMart("ensembl")
-ensembl <- useDataset("dmelanogaster_gene_ensembl", mart)
+#mart <- useMart("ensembl")
+#ensembl <- useDataset("dmelanogaster_gene_ensembl", mart)
 
 plotLengthPval <- function(lengths, pvals, highlight=0.1) {
   plot(log10(lengths), -log10(pvals), type='n',
@@ -202,31 +202,39 @@ calcMA <- function(x, conds, xlog) {
   d
 }
 
-MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
-                   xlab="mean counts (log10)", ylab="log fold change", cex=0.2, returnSmear=FALSE) {
+addOne <- function(x) x + 1
 
+MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
+                   xlab="mean counts (log10)", ylab="log fold change", cex=0.2, returnSmear=FALSE,
+                   adj.fun=addOne) {
+  if (length(conds) != ncol(x))
+    stop("The length of conds must be equal to the number of columns of x.")
+
+  if (length(highlight) != 1)
+    stop("highlight must be a numeric value (not a vector of length > 1).")
   d <- calcMA(x, conds, xlog)
   
   # Remove NAs (due to 0 counts), but plot them separately
   adj.i <- !is.finite(d$m) | !is.finite(d$a)
   
   x.adj <- x
-  x.adj[adj.i, ] <- x.adj[adj.i, ] + 1 # adjust counts only when necessary
+  x.adj[adj.i, ] <- adj.fun(x.adj[adj.i, ]) # adjust counts only when necessary
   d <- calcMA(x.adj, conds, xlog)
   d$adjusted <- adj.i
 
   # scale the plot's x-axis to allow smears
-  xmax.scaler <- 1.005
-  xmax <- max(d$m[is.finite(d$m)]) * xmax.scaler
-  xmin <- -1.2
-  
+  xscaler <- 1.0005
+  xmax <- max(d$a[is.finite(d$a)]) * xscaler
+  min.a <- min(d$a[is.finite(d$a)])
+  xmin <- min.a - 1.4
+
   if (!is.null(pval)) {
     d$pval <- pval
     plot(d$a, d$m, xlab=xlab, ylab=ylab, xlim=c(xmin, xmax), type='n')
     points(d$a[!d$adjusted], d$m[!d$adjusted], col=ifelse(d$pval[!d$adjusted] <= highlight, "red", "black"), cex=cex)
     if (smear) {
       save.before.smear <- d$a[d$adjusted]
-      d$a[d$adjusted] <- runif(sum(d$adjusted), -1, -0.5) 
+      d$a[d$adjusted] <- runif(sum(d$adjusted), min.a - 1.2, min.a - 0.2) 
       points(d$a[d$adjusted], d$m[d$adjusted], col=ifelse(d$pval[d$adjusted] <= highlight, "orange", "purple"), cex=cex)
     } else
       points(d$a[d$adjusted], d$m[d$adjusted], col=ifelse(d$pval[d$adjusted] <= highlight, "orange", "purple"), cex=cex)
@@ -243,3 +251,24 @@ MAplot <- function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact
 
   invisible(d)
 }
+
+setMethod("MAplot", "data.frame", MAplot)
+setMethod("MAplot", "matrix",
+          function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
+                   xlab="mean counts (log10)", ylab="log fold change", cex=0.2, returnSmear=FALSE,
+                   adj.fun=addOne) {
+            d <- as.data.frame(x)
+            MAplot(x=d, conds=conds, pval=pval, highlight=highlight,
+                   smear=smear, interact=interact, xlog=xlog, xlab=xlab,
+                   ylab=ylab, cex=cex, returnSmear=returnSmear, adj.fun=adj.fun)
+          })
+          
+setMethod("MAplot", "CountDataSet",
+          function(x, conds=NULL, pval=NULL, highlight=0.1, smear=TRUE, interact=FALSE, xlog=log10,
+                   xlab="mean counts (log10)", ylab="log fold change", cex=0.2, returnSmear=FALSE,
+                   adj.fun=addOne) {
+            d <- as.data.frame(counts(x, normalized=TRUE))
+            MAplot(x=d, conds=conds, pval=pval, highlight=highlight,
+                   smear=smear, interact=interact, xlog=xlog, xlab=xlab,
+                   ylab=ylab, cex=cex, returnSmear=returnSmear, adj.fun=adj.fun)
+          })
